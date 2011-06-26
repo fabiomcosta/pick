@@ -86,10 +86,9 @@ jasmine.TrivialReporter.prototype.reportRunnerStarting = function(runner) {
     }
   };
 
-  runner.env.specFilter = function(){
-    return self.specFilter.apply(self, arguments);
-  };
-
+    runner.env.specFilter = function(){
+        return self.specFilter.apply(self, arguments);
+    };
 };
 
 jasmine.TrivialReporter.prototype.reportRunnerResults = function(runner) {

@@ -41,7 +41,7 @@
     };
 
     for (var pseudo in pseudos){
-        $u.pseudos[pseudo] = pseudos[pseudo];
+        pick.pseudos[pseudo] = pseudos[pseudo];
     }
 
 })();

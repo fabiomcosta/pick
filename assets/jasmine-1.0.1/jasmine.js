@@ -116,7 +116,7 @@ jasmine.getEnv = function() {
  * @returns {Boolean}
  */
 jasmine.isArray_ = function(value) {
-  return jasmine.isA_("Array", value);  
+  return jasmine.isA_("Array", value);
 };
 
 /**
@@ -963,12 +963,13 @@ jasmine.Block = function(env, func, spec) {
   this.spec = spec;
 };
 
-jasmine.Block.prototype.execute = function(onComplete) {  
+jasmine.Block.prototype.execute = function(onComplete) {
   try {
     this.func.apply(this.spec);
   } catch (e) {
-    this.spec.fail(e);
+    this.spec.fail(e.stack || e);
   }
+
   onComplete();
 };
 /** JavaScript API reporter.
@@ -1003,7 +1004,7 @@ jasmine.JsApiReporter.prototype.summarize_ = function(suiteOrSpec) {
     type: isSuite ? 'suite' : 'spec',
     children: []
   };
-  
+
   if (isSuite) {
     var children = suiteOrSpec.children();
     for (var i = 0; i < children.length; i++) {
@@ -1704,7 +1705,7 @@ jasmine.Queue.prototype.next_ = function() {
 
   while (goAgain) {
     goAgain = false;
-    
+
     if (self.index < self.blocks.length && !this.abort) {
       var calledSynchronously = true;
       var completedSynchronously = false;
@@ -1742,7 +1743,7 @@ jasmine.Queue.prototype.next_ = function() {
       if (completedSynchronously) {
         onComplete();
       }
-      
+
     } else {
       self.running = false;
       if (self.onComplete) {
@@ -2067,7 +2068,13 @@ jasmine.Spec.prototype.spyOn = function(obj, methodName, ignoreMethodDoesntExist
   this.spies_.push(spyObj);
   spyObj.baseObj = obj;
   spyObj.methodName = methodName;
-  spyObj.originalValue = obj[methodName];
+  var original = spyObj.originalValue = obj[methodName];
+
+  for (var propertie in original){
+    if (original.hasOwnProperty(propertie)){
+      spyObj[propertie] = original[propertie];
+    }
+  }
 
   obj[methodName] = spyObj;
 

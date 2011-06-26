@@ -1,14 +1,14 @@
-var microSpecs = function(context){
+var finderSpecs = function(context){
 
-describe('Micro Selector', function() {
+xdescribe('Finder', function() {
 
-    var $u = uSelector;
-    $u.context = context.document;
+    var $p = pick;
+    $p.context = context.document;
 
     beforeEach(function(){
         this.addMatchers({
             toFind: function(n){
-                var found = $u(this.actual).length;
+                var found = $p(this.actual).length;
                 this.message = function() {
                     return [
                         "Expected " + this.actual + " to find " + n + " but found " + found,
@@ -25,24 +25,24 @@ describe('Micro Selector', function() {
         expect('#other').toFind(0);
         expect('#divid').toFind(1);
         expect('#divid2').toFind(1);
-        expect($u('#divid', $u('#divid2')[0]).length).toEqual(0);
+        expect($p('#divid', $p('#divid2')[0]).length).toEqual(0);
     });
 
     it('should select elements by tagName', function(){
-        var h2Collection = $u('h2');
+        var h2Collection = $p('h2');
         expect(h2Collection instanceof Array).toEqual(true);
         expect(h2Collection.length).toEqual(19);
         expect('ul').toFind(22);
-        expect($u('div', $u('#divid')[0]).length).toEqual(4);
+        expect($p('div', $p('#divid')[0]).length).toEqual(4);
     });
 
     it('should select elements by className', function(){
-        var classVcardCollection = $u('.vcard');
+        var classVcardCollection = $p('.vcard');
         expect(classVcardCollection instanceof Array).toEqual(true);
         expect(classVcardCollection.length).toEqual(5);
         expect('.pattern').toFind(40);
         expect('.example').toFind(43);
-        expect($u('.inner', $u('.wrapper')[0]).length).toEqual(1);
+        expect($p('.inner', $p('.wrapper')[0]).length).toEqual(1);
     });
 
     it('should select elements by tagName and id', function(){
@@ -64,7 +64,7 @@ describe('Micro Selector', function() {
     });
 
     it('should select elements with the added pseudo classes', function(){
-        $u.pseudos['contains-cheese'] = function(node){
+        $p.pseudos['contains-cheese'] = function(node){
             return node.innerHTML.indexOf('cheese') > -1;
         };
         expect('div:contains-cheese').toFind(1);
@@ -88,6 +88,10 @@ describe('Micro Selector', function() {
             expect(':checked').toFind(0);
             expect(':selected').toFind(0);
         });
+
+    });
+
+    describe('Selectors with combinators', function(){
 
     });
 

@@ -1,9 +1,9 @@
-MODULE_NAME = uSelector
+MODULE_NAME = pick
 UNCOMPRESSED = dist/${MODULE_NAME}.uncompressed.js
-CORE = src/uSelector.js
+CORE = src/pick.js
 ALL_MODULES = \
 	$(CORE) \
-	src/uSelectorPseudoClasses.js
+	src/pickPseudoClasses.js
 
 build: compress
 	@echo "Removing unnecessary files..."

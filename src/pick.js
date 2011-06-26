@@ -18,9 +18,9 @@
 
     var supports_querySelectorAll = !!document.querySelectorAll;
 
-    var $u = function(selector, _context, append){
+    var $p = function(selector, _context, append){
         elements = append || [];
-        context = _context || $u.context;
+        context = _context || $p.context;
         if (supports_querySelectorAll){
             try{
                 arrayFrom(context.querySelectorAll(selector));
@@ -59,7 +59,7 @@
         if ((parsedPseudos = parsed.pseudos)){
             for (var i = parsedPseudos.length; i--;){
                 var pseudoClass = pseudos[parsedPseudos[i]];
-                if (!(pseudoClass && pseudoClass.call($u, node))) return false;
+                if (!(pseudoClass && pseudoClass.call($p, node))) return false;
             }
         }
 
@@ -88,27 +88,38 @@
 
     };
 
+    var obj, firstSelector, reUnescape = /\\/g;
+
     var parse = function(selector){
-        parsed = {};
-        while ((selector = selector.replace(/([#.:])?([^#.:]*)/, parser))){};
+        parsed = [], firstSelector = true;
+        while ((selector = selector.replace(/(?:\s*([>+~])\s*|(\s))?([#.:])?([^#.:+>~\s]*)/, parser))){};
+        return parsed;
     };
 
-    var parser = function(all, simbol, name){
+    var parser = function(all, combinator, spaceCombinator, simbol, name){
+
+        combinator = combinator || spaceCombinator;
+        if (firstSelector || combinator != null){
+            firstSelector = false;
+            parsed.push(obj = {combinator: combinator || ' '});
+        }
+
+        name = name.replace(reUnescape, '');
         if (!simbol){
-            parsed.tag = name.toUpperCase();
+            obj.tag = name.toUpperCase();
         } else if (simbol == '#'){
-            parsed.id = name;
+            obj.id = name;
         } else if (simbol == '.'){
-            if (parsed.classes){
-                parsed.classes.push(name);
+            if (obj.classes){
+                obj.classes.push(name);
             } else {
-                parsed.classes = [name];
+                obj.classes = [name];
             }
         } else if (simbol == ':'){
-            if (parsed.pseudos){
-                parsed.pseudos.push(name);
+            if (obj.pseudos){
+                obj.pseudos.push(name);
             } else {
-                parsed.pseudos = [name];
+                obj.pseudos = [name];
             }
         }
         return '';
@@ -142,9 +153,10 @@
         return false;
     };
 
-    $u['pseudos'] = pseudos;
-    $u['context'] = document;
-    global['uSelector'] = $u;
-    if (!global['$u']) global['$u'] = $u;
+    $p['pseudos'] = pseudos;
+    $p['parse'] = parse;
+    $p['context'] = document;
+    global['pick'] = $p;
+    if (!global['$p']) global['$p'] = $p;
 
-})(this, document);
+})(this.export || this, document);
