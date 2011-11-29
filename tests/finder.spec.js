@@ -1,11 +1,11 @@
 var finderSpecs = function(context){
 
-xdescribe('Finder', function() {
+describe('Finder', function() {
 
     var $p = pick;
     $p.context = context.document;
 
-    beforeEach(function(){
+    beforeEach(function() {
         this.addMatchers({
             toFind: function(n){
                 var found = $p(this.actual).length;
@@ -20,7 +20,7 @@ xdescribe('Finder', function() {
         });
     });
 
-    it('should select elements by id', function(){
+    it('should select elements by id', function() {
         expect('#title').toFind(1);
         expect('#other').toFind(0);
         expect('#divid').toFind(1);
@@ -28,7 +28,7 @@ xdescribe('Finder', function() {
         expect($p('#divid', $p('#divid2')[0]).length).toEqual(0);
     });
 
-    it('should select elements by tagName', function(){
+    it('should select elements by tagName', function() {
         var h2Collection = $p('h2');
         expect(h2Collection instanceof Array).toEqual(true);
         expect(h2Collection.length).toEqual(19);
@@ -36,7 +36,7 @@ xdescribe('Finder', function() {
         expect($p('div', $p('#divid')[0]).length).toEqual(4);
     });
 
-    it('should select elements by className', function(){
+    it('should select elements by className', function() {
         var classVcardCollection = $p('.vcard');
         expect(classVcardCollection instanceof Array).toEqual(true);
         expect(classVcardCollection.length).toEqual(5);
@@ -45,17 +45,17 @@ xdescribe('Finder', function() {
         expect($p('.inner', $p('.wrapper')[0]).length).toEqual(1);
     });
 
-    it('should select elements by tagName and id', function(){
+    it('should select elements by tagName and id', function() {
         expect('h1#title').toFind(1);
         expect('div#title').toFind(0);
     });
 
-    it('should select elements by tagName and className', function(){
+    it('should select elements by tagName and className', function() {
         expect('div.wrapper').toFind(4);
         expect('b.wrapper').toFind(1);
     });
 
-    it('should select elements with untrimed selectors', function(){
+    it('should select elements with untrimed selectors', function() {
         expect(' #title ').toFind(1);
         expect(' ul ').toFind(22);
         expect(' .example ').toFind(43);
@@ -63,7 +63,7 @@ xdescribe('Finder', function() {
         expect(' abbr.some#abbr-id.classes.here').toFind(1);
     });
 
-    it('should select elements with the added pseudo classes', function(){
+    it('should select elements with the added pseudo classes', function() {
         $p.pseudos['contains-cheese'] = function(node){
             return node.innerHTML.indexOf('cheese') > -1;
         };
@@ -71,9 +71,9 @@ xdescribe('Finder', function() {
         expect('div:non-existent-pseudo').toFind(0);
     });
 
-    describe('Extra pseudo classes contained on the uSelectorPseudoClasses', function(){
+    describe('Extra pseudo classes contained on the uSelectorPseudoClasses', function() {
 
-        it('should find elements by the defined pseudo-classes', function(){
+        it('should find elements by the defined pseudo-classes', function() {
             expect('a:empty').toFind(30);
 
             expect('p:first-child').toFind(54);
@@ -91,7 +91,7 @@ xdescribe('Finder', function() {
 
     });
 
-    describe('Selectors with combinators', function(){
+    describe('Selectors with combinators', function() {
 
     });
 

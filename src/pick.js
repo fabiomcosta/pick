@@ -1,11 +1,4 @@
-/**
- * author:  Fabio Miranda Costa
- * github:  fabiomcosta
- * twitter: @fabiomiranda
- * license: MIT-style license
- */
-
-(function(global, document){
+(function(global, document) {
 
     var elements,
         parsed,
@@ -14,11 +7,17 @@
         pseudos = {},
         context,
         currentDocument,
-        reTrim = /^\s+|\s+$/g;
+        root = document.documentElement;
 
-    var supports_querySelectorAll = !!document.querySelectorAll;
+    var supports_querySelectorAll = !!document.querySelectorAll,
+        nativeMatchesSelector = root.matchesSelector || root.msMatchesSelector || root.mozMatchesSelector || root.webkitMatchesSelector;
 
-    var $p = function(selector, _context, append){
+    if (nativeMatchesSelector) try {
+        nativeMatchesSelector.call(root, ':pick');
+        nativeMatchesSelector = null;
+    } catch(e){};
+
+    var $p = function(selector, _context, append) {
         elements = append || [];
         context = _context || $p.context;
         if (supports_querySelectorAll){
@@ -29,35 +28,37 @@
         }
 
         currentDocument = context.ownerDocument || context;
-        parse(selector.replace(reTrim, ''));
+        parse(selector);
         find();
 
         return elements;
     };
 
-    var matchSelector = function(node){
+    var matchSelector = function(node) {
+        var i;
+
         if (parsed.tag){
             var nodeName = node.nodeName.toUpperCase();
-            if (parsed.tag == '*'){
+            if (parsed.tag === '*') {
                 if (nodeName < '@') return false; // Fix for comment nodes and closed nodes
             } else {
-                if (nodeName != parsed.tag) return false;
+                if (nodeName !== parsed.tag) return false;
             }
         }
 
-        if (parsed.id && node.getAttribute('id') != parsed.id){
+        if (parsed.id && node.getAttribute('id') !== parsed.id) {
             return false;
         }
 
-        if ((parsedClasses = parsed.classes)){
+        if ((parsedClasses = parsed.classes)) {
             var className = (' ' + node.className + ' ');
-            for (var i = parsedClasses.length; i--;){
+            for (i = parsedClasses.length; i--;){
                 if (className.indexOf(' ' + parsedClasses[i] + ' ') < 0) return false;
             }
         }
 
-        if ((parsedPseudos = parsed.pseudos)){
-            for (var i = parsedPseudos.length; i--;){
+        if ((parsedPseudos = parsed.pseudos)) {
+            for (i = parsedPseudos.length; i--;){
                 var pseudoClass = pseudos[parsedPseudos[i]];
                 if (!(pseudoClass && pseudoClass.call($p, node))) return false;
             }
@@ -66,14 +67,14 @@
         return true;
     };
 
-    var find = function(){
+    var find = function() {
 
         var parsedId = parsed.id,
             merge = ((parsedId && parsed.tag || parsed.classes || parsed.pseudos)
                 || (!parsedId && (parsed.classes || parsed.pseudos))) ?
                 arrayFilterAndMerge : arrayMerge;
 
-        if (parsedId){
+        if (parsedId) {
 
             var el = currentDocument.getElementById(parsedId);
             if (el && (currentDocument === context || contains(el))){
@@ -88,15 +89,35 @@
 
     };
 
-    var obj, firstSelector, reUnescape = /\\/g;
+    var match = function(el, selector) {
+        if (nativeMatchesSelector) {
+            try {
+                return nativeMatchesSelector.call(el, selector);
+            } catch(e) {}
+        }
 
-    var parse = function(selector){
+        parse(selector);
+        return matchSelector(el);
+    };
+
+    var obj,
+        firstSelector,
+        reTrim = /^\s+|\s+$/g,
+        splitter = /(?:\s*([>+~])\s*|(\s))?([#.:])?([^#.:+>~\s]*)/,
+        reUnescape = /\\/g;
+
+    var parse = function(selector) {
+        selector = selector.replace(reTrim, '');
         parsed = [], firstSelector = true;
-        while ((selector = selector.replace(/(?:\s*([>+~])\s*|(\s))?([#.:])?([^#.:+>~\s]*)/, parser))){};
+        while ((selector = selector.replace(splitter, parser))) {};
+
+        // temporary stuff...
+        parsed = parsed[0];
+
         return parsed;
     };
 
-    var parser = function(all, combinator, spaceCombinator, simbol, name){
+    var parser = function(all, combinator, spaceCombinator, simbol, name) {
 
         combinator = combinator || spaceCombinator;
         if (firstSelector || combinator != null){
@@ -107,16 +128,16 @@
         name = name.replace(reUnescape, '');
         if (!simbol){
             obj.tag = name.toUpperCase();
-        } else if (simbol == '#'){
+        } else if (simbol == '#') {
             obj.id = name;
-        } else if (simbol == '.'){
-            if (obj.classes){
+        } else if (simbol == '.') {
+            if (obj.classes) {
                 obj.classes.push(name);
             } else {
                 obj.classes = [name];
             }
-        } else if (simbol == ':'){
-            if (obj.pseudos){
+        } else if (simbol == ':') {
+            if (obj.pseudos) {
                 obj.pseudos.push(name);
             } else {
                 obj.pseudos = [name];
@@ -126,27 +147,27 @@
     };
 
     var slice = Array.prototype.slice;
-    var arrayFrom = function(collection){
+    var arrayFrom = function(collection) {
         elements = slice.call(collection, 0);
     };
-    var arrayMerge = function(collection){
-        for (var i = 0, node; node = collection[i++];){
+    var arrayMerge = function(collection) {
+        for (var i = 0, node; node = collection[i++];) {
             elements.push(node);
         }
     };
     try {
-        slice.call(document.documentElement.childNodes, 0);
+        slice.call(root.childNodes, 0);
     } catch(e) {
         arrayFrom = arrayMerge;
     }
 
-    var arrayFilterAndMerge = function(found){
+    var arrayFilterAndMerge = function(found) {
         for (var i = 0, node; node = found[i++];){
             if (matchSelector(node)) elements.push(node);
         }
     };
 
-    var contains = function(node){
+    var contains = function(node) {
         do {
             if (node === context) return true;
         } while ((node = node.parentNode));
@@ -156,7 +177,8 @@
     $p['pseudos'] = pseudos;
     $p['parse'] = parse;
     $p['context'] = document;
+    $p['match'] = match;
     global['pick'] = $p;
     if (!global['$p']) global['$p'] = $p;
 
-})(this.export || this, document);
+})(typeof exports == 'undefined' ? this : exports, document);

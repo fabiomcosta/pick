@@ -1,6 +1,6 @@
-describe('parser', function(){
+xdescribe('parser', function(){
 
-    it('should parse a simple selector', function(){
+    it('should parse a simple selector', function() {
         expect($p.parse('#id')).toEqual([{combinator: ' ', id: 'id'}]);
         expect($p.parse('tag#id')).toEqual([{combinator: ' ', tag: 'TAG', id: 'id'}]);
         expect($p.parse('#id.class.class2')).toEqual([{
@@ -15,11 +15,11 @@ describe('parser', function(){
         }]);
     });
 
-    it('should parse correctly with some problematic characters', function(){
+    it('should parse correctly with some problematic characters', function() {
         expect($p.parse('#foo\\,bar')).toEqual([{combinator: ' ', id: 'foo,bar'}]);
     });
 
-    it('should parse a complex selector', function(){
+    it('should parse a complex selector', function() {
         expect($p.parse('> #id')).toEqual([{combinator: '>', id: 'id'}]);
         expect($p.parse('>#id')).toEqual([{combinator: '>', id: 'id'}]);
         expect($p.parse('> #id .class')).toEqual([
