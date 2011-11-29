@@ -109,6 +109,9 @@
                 }
             }
             return false;
+        },
+        '+': function() {
+            return matchSelector((node = node.previousSibling));
         }
     };
 

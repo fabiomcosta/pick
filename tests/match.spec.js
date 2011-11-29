@@ -77,9 +77,24 @@ describe('match', function(){
             expect(create('<i></i><b></b>', 1)).toMatchSelector('i ~ b');
         });
 
-        it('should match when being the first child', function() {
-            expect(create('<div id="id"><i></i><b></b></div>', 2)).toMatchSelector('div#id > i ~ b');
+        it('should match when combined with other combinators', function() {
+            expect(create('<div><i></i><b></b></div>', 2)).toMatchSelector('div > i ~ b');
+        });
+
+        it('should match when its the nextSibling from the nextSibling', function() {
+            expect(create('<i></i><span></span><b></b>', 2)).toMatchSelector('i ~ b');
         });
     });
+
+    describe('match with the "+" combinator', function() {
+        it('should match on the simplest case', function() {
+            expect(create('<i></i><b></b>', 1)).toMatchSelector('i + b');
+        });
+
+        it('should not match when its the nextSibling from the nextSibling', function() {
+            expect(create('<i></i><span></span><b></b>', 2)).not.toMatchSelector('i + b');
+        });
+    });
+
 });
 
