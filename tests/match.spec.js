@@ -3,7 +3,7 @@ describe('match', function(){
     var _cointainer = document.createElement('div');
     var create = function(html, i) {
         _cointainer.innerHTML = html;
-        return _cointainer.getElementsByTagName('*')[i || 0];
+        return $p('*', _cointainer)[i || 0];
     };
 
     beforeEach(function(){
@@ -89,6 +89,10 @@ describe('match', function(){
     describe('match with the "+" combinator', function() {
         it('should match on the simplest case', function() {
             expect(create('<i></i><b></b>', 1)).toMatchSelector('i + b');
+        });
+
+        it('should match even when theres a text sibling', function() {
+            expect(create('<span></span> <b></b>', 1)).toMatchSelector('span + b');
         });
 
         it('should not match when its the nextSibling from the nextSibling', function() {

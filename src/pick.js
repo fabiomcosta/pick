@@ -111,7 +111,12 @@
             return false;
         },
         '+': function() {
-            return matchSelector((node = node.previousSibling));
+            while ((node = node.previousSibling)) {
+                if (node.nodeType === 1) {
+                    return matchSelector(node);
+                }
+            }
+            return false;
         }
     };
 
