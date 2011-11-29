@@ -37,7 +37,7 @@ describe('match', function(){
     });
 
     describe('match with the " " combinator', function() {
-        it('should match when being the firs child', function() {
+        it('should match when being the first child', function() {
             expect(create('<div id="id"><b></b></div>', 1)).toMatchSelector('div#id b');
         });
 
@@ -54,5 +54,32 @@ describe('match', function(){
         });
     });
 
+    describe('match with the ">" combinator', function() {
+        it('should match when being the first child', function() {
+            expect(create('<div id="id"><b></b></div>', 1)).toMatchSelector('div#id > b');
+        });
+
+        it('should match when using more than one time', function() {
+            expect(create('<div id="id"><b><i></i></b></div>', 2)).toMatchSelector('div#id > b > i');
+        });
+
+        it('should not match when it shouldnt', function() {
+            expect(create('<span><strong><em></em></strong></span>', 2)).not.toMatchSelector('span > em');
+        });
+
+        it('should match when its the first combinator', function() {
+            expect(create('<div id="id"><b></b></div>', 1)).toMatchSelector('> b');
+        });
+    });
+
+    describe('match with the "~" combinator', function() {
+        it('should match on the simplest case', function() {
+            expect(create('<i></i><b></b>', 1)).toMatchSelector('i ~ b');
+        });
+
+        it('should match when being the first child', function() {
+            expect(create('<div id="id"><i></i><b></b></div>', 2)).toMatchSelector('div#id > i ~ b');
+        });
+    });
 });
 

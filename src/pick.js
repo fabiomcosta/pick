@@ -75,9 +75,9 @@
 
         if (parsedId) {
 
-            var el = currentDocument.getElementById(parsedId);
-            if (el && (currentDocument === context || contains(el))){
-                merge([el]);
+            var element = currentDocument.getElementById(parsedId);
+            if (element && (currentDocument === context || contains(element))){
+                merge([element]);
             }
 
         } else {
@@ -88,9 +88,22 @@
 
     };
 
-    var filters = {
-        ' ': function(node) {
+    var node;
+
+    var combinatorsMatchers = {
+        ' ': function() {
             while ((node = node.parentNode)) {
+                if (matchSelector(node)) {
+                    return true;
+                }
+            }
+            return false;
+        },
+        '>': function() {
+            return matchSelector((node = node.parentNode));
+        },
+        '~': function() {
+            while ((node = node.previousSibling)) {
                 if (matchSelector(node)) {
                     return true;
                 }
@@ -111,10 +124,11 @@
 
         parsed = _parsed[_parsed.length - 1];
         var matches = matchSelector(element);
+        node = element;
 
         for (var i = _parsed.length - 1; i--;) {
             parsed = _parsed[i];
-            matches = matches && filters[parsed.combinator](element);
+            matches = matches && combinatorsMatchers[_parsed[i+1].combinator]();
         }
 
         return matches;
