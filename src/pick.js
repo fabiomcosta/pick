@@ -2,8 +2,7 @@
 
     var elements,
         parsed,
-        parsedClasses,
-        parsedPseudos,
+        _parsed,
         pseudos = {},
         context,
         currentDocument,
@@ -37,12 +36,12 @@
     var matchSelector = function(node) {
         var i;
 
-        if (parsed.tag){
+        if ((_parsed = parsed.tag)){
             var nodeName = node.nodeName.toUpperCase();
-            if (parsed.tag === '*') {
+            if (_parsed === '*') {
                 if (nodeName < '@') return false; // Fix for comment nodes and closed nodes
             } else {
-                if (nodeName !== parsed.tag) return false;
+                if (nodeName !== _parsed) return false;
             }
         }
 
@@ -50,16 +49,16 @@
             return false;
         }
 
-        if ((parsedClasses = parsed.classes)) {
+        if ((_parsed = parsed.classes)) {
             var className = (' ' + node.className + ' ');
-            for (i = parsedClasses.length; i--;){
-                if (className.indexOf(' ' + parsedClasses[i] + ' ') < 0) return false;
+            for (i = _parsed.length; i--;){
+                if (className.indexOf(' ' + _parsed[i] + ' ') < 0) return false;
             }
         }
 
-        if ((parsedPseudos = parsed.pseudos)) {
-            for (i = parsedPseudos.length; i--;){
-                var pseudoClass = pseudos[parsedPseudos[i]];
+        if ((_parsed = parsed.pseudos)) {
+            for (i = _parsed.length; i--;){
+                var pseudoClass = pseudos[_parsed[i]];
                 if (!(pseudoClass && pseudoClass.call($p, node))) return false;
             }
         }
@@ -89,18 +88,40 @@
 
     };
 
-    var match = function(el, selector) {
-        if (nativeMatchesSelector) {
-            try {
-                return nativeMatchesSelector.call(el, selector);
-            } catch(e) {}
+    var filters = {
+        ' ': function(node) {
+            while ((node = node.parentNode)) {
+                if (matchSelector(node)) {
+                    return true;
+                }
+            }
+            return false;
         }
-
-        parse(selector);
-        return matchSelector(el);
     };
 
-    var obj,
+    var match = function(element, selector) {
+        if (nativeMatchesSelector) {
+            try {
+                return nativeMatchesSelector.call(element, selector);
+            } catch(e) {}
+        }
+        parse(selector);
+
+        var _parsed = parsed;
+
+        parsed = _parsed[_parsed.length - 1];
+        var matches = matchSelector(element);
+
+        for (var i = _parsed.length - 1; i--;) {
+            parsed = _parsed[i];
+            matches = matches && filters[parsed.combinator](element);
+        }
+
+        return matches;
+    };
+
+
+    var token,
         firstSelector,
         reTrim = /^\s+|\s+$/g,
         splitter = /(?:\s*([>+~])\s*|(\s))?([#.:])?([^#.:+>~\s]*)/,
@@ -110,10 +131,6 @@
         selector = selector.replace(reTrim, '');
         parsed = [], firstSelector = true;
         while ((selector = selector.replace(splitter, parser))) {};
-
-        // temporary stuff...
-        parsed = parsed[0];
-
         return parsed;
     };
 
@@ -122,25 +139,25 @@
         combinator = combinator || spaceCombinator;
         if (firstSelector || combinator != null){
             firstSelector = false;
-            parsed.push(obj = {combinator: combinator || ' '});
+            parsed.push(token = {combinator: combinator || ' '});
         }
 
         name = name.replace(reUnescape, '');
         if (!simbol){
-            obj.tag = name.toUpperCase();
+            token.tag = name.toUpperCase();
         } else if (simbol == '#') {
-            obj.id = name;
+            token.id = name;
         } else if (simbol == '.') {
-            if (obj.classes) {
-                obj.classes.push(name);
+            if (token.classes) {
+                token.classes.push(name);
             } else {
-                obj.classes = [name];
+                token.classes = [name];
             }
         } else if (simbol == ':') {
-            if (obj.pseudos) {
-                obj.pseudos.push(name);
+            if (token.pseudos) {
+                token.pseudos.push(name);
             } else {
-                obj.pseudos = [name];
+                token.pseudos = [name];
             }
         }
         return '';

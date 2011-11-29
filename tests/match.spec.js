@@ -36,8 +36,22 @@ describe('match', function(){
         });
     });
 
-    it('should match a compound selector', function() {
-        expect(create('<div id="id"><b></b></div>', 1)).toMatchSelector('div#id b');
+    describe('match with the " " combinator', function() {
+        it('should match when being the firs child', function() {
+            expect(create('<div id="id"><b></b></div>', 1)).toMatchSelector('div#id b');
+        });
+
+        it('should match with any child level', function() {
+            expect(create('<div id="id"><b><i></i></b></div>', 2)).toMatchSelector('div#id i');
+        });
+
+        it('should match when using more than one time', function() {
+            expect(create('<span><strong><em></em></strong></span>', 2)).toMatchSelector('span strong em');
+        });
+
+        it('should not match when it shouldnt', function() {
+            expect(create('<span><strong><em></em></strong></span>', 2)).not.toMatchSelector('em strong span');
+        });
     });
 
 });
