@@ -104,7 +104,7 @@
         },
         '~': function() {
             while ((node = node.previousSibling)) {
-                if (matchSelector(node)) {
+                if (node.nodeType === 1 && matchSelector(node)) {
                     return true;
                 }
             }
@@ -120,12 +120,15 @@
         }
     };
 
-    var match = function(element, selector) {
+    var match = function(element, selector, _context) {
+        context = _context || $p.context;
+
         if (nativeMatchesSelector) {
             try {
                 return nativeMatchesSelector.call(element, selector);
             } catch(e) {}
         }
+
         parse(selector);
 
         var _parsed = parsed;
@@ -141,7 +144,6 @@
 
         return matches;
     };
-
 
     var token,
         firstSelector,

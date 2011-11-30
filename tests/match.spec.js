@@ -1,19 +1,19 @@
 describe('match', function(){
 
-    var _cointainer = document.createElement('div');
     var create = function(html, i) {
-        _cointainer.innerHTML = html;
-        return $p('*', _cointainer)[i || 0];
+        var _container = document.createElement('div');
+        _container.innerHTML = html;
+        return $p('*', _container)[i || 0];
     };
 
     beforeEach(function(){
         this.addMatchers({
-            toMatchSelector: function(selector) {
+            toMatchSelector: function(selector, context) {
                 var actual = this.actual;
                 if (typeof actual === 'string') {
                     actual = create(actual);
                 }
-                return $p.match(actual, selector);
+                return $p.match(actual, selector, context);
             }
         });
     });
@@ -93,6 +93,42 @@ describe('match', function(){
 
         it('should not match when its the nextSibling from the nextSibling', function() {
             expect(create('<i></i><span></span><b></b>', 2)).not.toMatchSelector('i + b');
+        });
+    });
+
+    describe('with context', function() {
+        beforeEach(function() {
+            this.context = create('<div id="out"><div id="context"></div></div>', 1);
+            $p.context = this.context;
+        });
+        afterEach(function() {
+            $p.context = null;
+        });
+
+        it('should match a simple selector', function() {
+            var el = create('<i></i>');
+            this.context.appendChild(el);
+            expect(el).toMatchSelector('i');
+        });
+
+        it('should not match a simple selector, if the element is not into the context', function() {
+            expect('<i></i>').not.toMatchSelector('i');
+        });
+
+        it('should match a compound selector', function() {
+            var el = create('<i><b></b></i>');
+            this.context.appendChild(el);
+            expect(el).toMatchSelector('i b');
+        });
+
+        it('should not match a compound selector, if the element is not into the context', function() {
+            expect('<i><b></b></i>').not.toMatchSelector('i b');
+        });
+
+        it('should not match a compound selector with an out of scope element', function() {
+            var el = create('<i><b></b></i>');
+            this.context.appendChild(el);
+            expect(el).not.toMatchSelector('#out i b');
         });
     });
 
