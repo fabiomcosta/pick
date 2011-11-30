@@ -66,10 +66,6 @@ describe('match', function(){
         it('should not match when it shouldnt', function() {
             expect(create('<span><strong><em></em></strong></span>', 2)).not.toMatchSelector('span > em');
         });
-
-        it('should match when its the first combinator', function() {
-            expect(create('<div id="id"><b></b></div>', 1)).toMatchSelector('> b');
-        });
     });
 
     describe('match with the "~" combinator', function() {
