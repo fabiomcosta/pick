@@ -14,17 +14,16 @@
     if (nativeMatchesSelector) try {
         nativeMatchesSelector.call(root, ':pick');
         nativeMatchesSelector = null;
-    } catch(e){};
+    } catch(e) {}
 
     var $p = function(selector, _context, append) {
         elements = append || [];
-        context = _context || $p.context;
-        if (supports_querySelectorAll){
-            try{
-                arrayFrom(context.querySelectorAll(selector));
-                return elements;
-            } catch (e){}
-        }
+        context = _context || $p.context || document;
+
+        if (supports_querySelectorAll) try {
+            arrayFrom(context.querySelectorAll(selector));
+            return elements;
+        } catch (e) {}
 
         currentDocument = context.ownerDocument || context;
         parse(selector);
@@ -121,12 +120,21 @@
     };
 
     var match = function(element, selector, _context) {
-        context = _context || $p.context;
 
         if (nativeMatchesSelector) {
+            var contextId, hasId;
+            if (_context) {
+                hasId = !!(contextId = _context.id);
+                selector = '#' + (hasId ? contextId : _context.id = '__pickid__') + ' ' + selector;
+            }
             try {
                 return nativeMatchesSelector.call(element, selector);
-            } catch(e) {}
+            } catch(e) {
+            } finally {
+                if (_context && !hasId) {
+                    _context.removeAttribute('id');
+                }
+            }
         }
 
         parse(selector);
@@ -140,6 +148,11 @@
         for (var i = _parsed.length - 1; i--;) {
             parsed = _parsed[i];
             matches = matches && combinatorsMatchers[_parsed[i+1].combinator]();
+        }
+
+        if (_context) {
+            context = _context;
+            matches = matches && contains(node);
         }
 
         return matches;
@@ -158,7 +171,7 @@
         return parsed;
     };
 
-    var parser = function(all, combinator, spaceCombinator, simbol, name) {
+    var parser = function(all, combinator, spaceCombinator, symbol, name) {
 
         combinator = combinator || spaceCombinator;
         if (firstSelector || combinator != null){
@@ -167,17 +180,17 @@
         }
 
         name = name.replace(reUnescape, '');
-        if (!simbol){
+        if (!symbol){
             token.tag = name.toUpperCase();
-        } else if (simbol == '#') {
+        } else if (symbol === '#') {
             token.id = name;
-        } else if (simbol == '.') {
+        } else if (symbol === '.') {
             if (token.classes) {
                 token.classes.push(name);
             } else {
                 token.classes = [name];
             }
-        } else if (simbol == ':') {
+        } else if (symbol === ':') {
             if (token.pseudos) {
                 token.pseudos.push(name);
             } else {
@@ -217,9 +230,10 @@
 
     $p['pseudos'] = pseudos;
     $p['parse'] = parse;
-    $p['context'] = document;
     $p['match'] = match;
+    $p['context'] = document;
     global['pick'] = $p;
     if (!global['$p']) global['$p'] = $p;
 
 })(typeof exports == 'undefined' ? this : exports, document);
+

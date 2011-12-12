@@ -1,5 +1,5 @@
 var SlickSpec = {
-	
+
 	addEvent: function(obj, event, handler) {
 		if (obj.addEventListener) {
 			obj.addEventListener(event, handler, false);
@@ -9,14 +9,14 @@ var SlickSpec = {
 			handler.call(obj, {type: event});
 		}
 	}
-	
+
 };
 
 
 (function(){
-	
+
 	// moo browser object
-	
+
 	var ua = navigator.userAgent.toLowerCase(),
 		platform = navigator.platform.toLowerCase(),
 		UA = ua.match(/(opera|ie|firefox|chrome|version)[\s\/:]([\w\d\.]+)?.*?(safari|version[\s\/:]([\w\d\.]+)|$)/) || [null, 'unknown', 0];
@@ -28,11 +28,11 @@ var SlickSpec = {
 			name: ua.match(/ip(?:ad|od|hone)/) ? 'ios' : (ua.match(/(?:webos|android)/) || platform.match(/mac|win|linux/) || ['other'])[0]
 		}
 	};
-	
+
 	SlickSpec.Browser[browser.name] = true;
 	SlickSpec.Browser[browser.name + parseInt(browser.version, 10)] = true;
 	SlickSpec.Browser.platform[browser.platform.name] = true;
-	
+
 })();
 
 
@@ -67,7 +67,7 @@ var SlickSpec = {
 		haystack = arrayFrom(haystack);
 		return oldJasmineContains.call(this, haystack, needle);
 	};
-	
+
 })();
 
 
@@ -85,20 +85,20 @@ var SlickSpec = {
 		if (mockName && !testBuilder){
 			throw new Error("Invalid mockName, Mock syntax: `new Mock(/mockName/, function(specs, window){})`");
 		}
-	
+
 		if (Object.prototype.toString.call(mockName) != '[object RegExp]'){
 			mockName = new RegExp(mockName, 'i');
 		}
-	
+
 		this.mockName = mockName;
 		this.testBuilder = testBuilder;
 		Mock.mocks.push(this);
 	};
 
 	Mock.mocks = [];
-	
+
 	Mock.templateCounter = 0;
-	
+
 	Mock.prototype.run = function(){
 		var globalContextOld = global.context, self = this;
 		for (var mockName in global.mocks) {
@@ -130,7 +130,7 @@ var SlickSpec = {
 
 	Mock.Request = function(mockName, url){
 		if (!this instanceof Mock.Request) throw new Error('Mock.Request is not callable directly. Must use `new Mock.Request`');
-	
+
 		this.mockName = mockName;
 		this.url = url + '?nocache=' + (+new Date);
 		var self = this;
