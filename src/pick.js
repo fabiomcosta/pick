@@ -19,7 +19,7 @@
             return arrayFrom(context.querySelectorAll(selector));
         } catch (e) {}
 
-        return find(context.ownerDocument || context, context, elements, $p.parse(selector));
+        return find(context.ownerDocument || context, context, elements, $p.parse(selector)[0]);
     };
 
     var matchSelector = function(node, parsed) {
@@ -48,7 +48,8 @@
         if ((_parsed = parsed.pseudos)) {
             for (i = _parsed.length; i--;) {
                 var pseudoClass = pseudos[_parsed[i]];
-                if (!(pseudoClass && pseudoClass.call($p, node))) return false;
+                if (!pseudoClass) throw Error('pick: pseudo-class ":'+_parsed[i]+'" is not defined.');
+                if (!pseudoClass.call($p, node)) return false;
             }
         }
 

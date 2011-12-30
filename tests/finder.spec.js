@@ -63,12 +63,14 @@ describe('Finder', function() {
         expect(' abbr.some#abbr-id.classes.here').toFind(1);
     });
 
-    it('should select elements with the added pseudo classes', function() {
-        $p.pseudos['contains-cheese'] = function(node){
+    it('should select elements with the added custom pseudo classes', function() {
+        $p.pseudos['contains-cheese'] = function(node) {
             return node.innerHTML.indexOf('cheese') > -1;
         };
         expect('div:contains-cheese').toFind(1);
-        expect('div:non-existent-pseudo').toFind(0);
+    });
+    it('should throw an error if the pseudo-class is not defined', function() {
+        expect(function() { $p('div:non-existent-pseudo'); }).toThrow('pick: pseudo-class ":non-existent-pseudo" is not defined.');
     });
 
     describe('Extra pseudo classes contained on the uSelectorPseudoClasses', function() {
