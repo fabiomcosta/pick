@@ -1,41 +1,31 @@
 (function(global, document) {
 
-    var elements,
-        parsed,
-        _parsed,
-        pseudos = {},
-        context,
-        currentDocument,
+    var pseudos = {},
         root = document.documentElement;
 
     var supports_querySelectorAll = !!document.querySelectorAll,
         nativeMatchesSelector = root.matchesSelector || root.msMatchesSelector || root.mozMatchesSelector || root.webkitMatchesSelector;
 
     if (nativeMatchesSelector) try {
-        nativeMatchesSelector.call(root, ':pick');
+        nativeMatchesSelector.call(root, ':_pick');
         nativeMatchesSelector = null;
     } catch(e) {}
 
     var $p = function(selector, _context, append) {
-        elements = append || [];
-        context = _context || $p.context || document;
+        var elements = append || [],
+            context = _context || $p.context || document;
 
         if (supports_querySelectorAll) try {
-            arrayFrom(context.querySelectorAll(selector));
-            return elements;
+            return arrayFrom(context.querySelectorAll(selector));
         } catch (e) {}
 
-        currentDocument = context.ownerDocument || context;
-        parse(selector);
-        find();
-
-        return elements;
+        return find(context.ownerDocument || context, context, elements, $p.parse(selector));
     };
 
-    var matchSelector = function(node) {
-        var i;
+    var matchSelector = function(node, parsed) {
+        var i, _parsed;
 
-        if ((_parsed = parsed.tag)){
+        if ((_parsed = parsed.tag)) {
             var nodeName = node.nodeName.toUpperCase();
             if (_parsed === '*') {
                 if (nodeName < '@') return false; // Fix for comment nodes and closed nodes
@@ -50,13 +40,13 @@
 
         if ((_parsed = parsed.classes)) {
             var className = (' ' + node.className + ' ');
-            for (i = _parsed.length; i--;){
+            for (i = _parsed.length; i--;) {
                 if (className.indexOf(' ' + _parsed[i] + ' ') < 0) return false;
             }
         }
 
         if ((_parsed = parsed.pseudos)) {
-            for (i = _parsed.length; i--;){
+            for (i = _parsed.length; i--;) {
                 var pseudoClass = pseudos[_parsed[i]];
                 if (!(pseudoClass && pseudoClass.call($p, node))) return false;
             }
@@ -65,163 +55,161 @@
         return true;
     };
 
-    var find = function() {
-
+    var find = function(doc, context, elements, parsed) {
         var parsedId = parsed.id,
             merge = ((parsedId && parsed.tag || parsed.classes || parsed.pseudos)
                 || (!parsedId && (parsed.classes || parsed.pseudos))) ?
                 arrayFilterAndMerge : arrayMerge;
 
         if (parsedId) {
-
-            var element = currentDocument.getElementById(parsedId);
-            if (element && (currentDocument === context || contains(element))){
-                merge([element]);
+            var element = doc.getElementById(parsedId);
+            if (element && (doc === context || contains(context, element))){
+                merge([element], elements, parsed);
             }
-
         } else {
-
-            merge(context.getElementsByTagName(parsed.tag || '*'));
-
+            merge(context.getElementsByTagName(parsed.tag || '*'), elements, parsed);
         }
 
+        return elements;
     };
 
     var node;
-
     var combinatorsMatchers = {
-        ' ': function() {
+        ' ': function(parsed) {
             while ((node = node.parentNode)) {
-                if (matchSelector(node)) {
+                if (matchSelector(node, parsed)) {
                     return true;
                 }
             }
             return false;
         },
-        '>': function() {
-            return matchSelector((node = node.parentNode));
+        '>': function(parsed) {
+            return matchSelector((node = node.parentNode), parsed);
         },
-        '~': function() {
+        '~': function(parsed) {
             while ((node = node.previousSibling)) {
-                if (node.nodeType === 1 && matchSelector(node)) {
+                if (matchSelector(node, parsed)) {
                     return true;
                 }
             }
             return false;
         },
-        '+': function() {
+        '+': function(parsed) {
             while ((node = node.previousSibling)) {
                 if (node.nodeType === 1) {
-                    return matchSelector(node);
+                    return matchSelector(node, parsed);
                 }
             }
             return false;
         }
     };
 
-    var match = function(element, selector, _context) {
-
+    var match = function(element, selector, context) {
         if (nativeMatchesSelector) {
             var contextId, hasId;
-            if (_context) {
-                hasId = !!(contextId = _context.id);
-                selector = '#' + (hasId ? contextId : _context.id = '__pickid__') + ' ' + selector;
+            if (context) {
+                hasId = !!(contextId = context.id);
+                selector = '#' + (hasId ? contextId : context.id = '__pickid__') + ' ' + selector;
             }
             try {
                 return nativeMatchesSelector.call(element, selector);
-            } catch(e) {
             } finally {
-                if (_context && !hasId) {
-                    _context.removeAttribute('id');
+                if (context && !hasId) {
+                    context.removeAttribute('id');
                 }
             }
         }
 
-        parse(selector);
-
-        var _parsed = parsed;
-
-        parsed = _parsed[_parsed.length - 1];
-        var matches = matchSelector(element);
         node = element;
 
-        for (var i = _parsed.length - 1; i--;) {
-            parsed = _parsed[i];
-            matches = matches && combinatorsMatchers[_parsed[i+1].combinator]();
-        }
+        var parsed = $p.parse(selector),
+            matches = matchSelector(element, parsed[parsed.length - 1]);
 
-        if (_context) {
-            context = _context;
-            matches = matches && contains(node);
+        for (var i = parsed.length - 1; i--;) {
+            matches = matches && combinatorsMatchers[parsed[i+1].combinator](parsed[i]);
+        }
+        if (context) {
+            matches = matches && contains(context, node);
         }
 
         return matches;
     };
 
-    var token,
-        firstSelector,
-        reTrim = /^\s+|\s+$/g,
-        splitter = /(?:\s*([>+~])\s*|(\s))?([#.:])?([^#.:+>~\s]*)/,
-        reUnescape = /\\/g;
+    // parser
+    (function() {
+        var token,
+            parsed,
+            reTrim = /^\s+|\s+$/g,
+            splitter = /(?:\s*([>+~])\s*|(\s))?([#.:])?([^#.:+>~\s]*)/,
+            reUnescape = /\\/g;
 
-    var parse = function(selector) {
-        selector = selector.replace(reTrim, '');
-        parsed = [], firstSelector = true;
-        while ((selector = selector.replace(splitter, parser))) {};
-        return parsed;
-    };
+        var parse = function(selector) {
+            selector = selector.replace(reTrim, '');
+            parsed = [], token = null;
+            while ((selector = selector.replace(splitter, parser))) {};
+            return parsed;
+        };
 
-    var parser = function(all, combinator, spaceCombinator, symbol, name) {
-
-        combinator = combinator || spaceCombinator;
-        if (firstSelector || combinator != null){
-            firstSelector = false;
-            parsed.push(token = {combinator: combinator || ' '});
-        }
-
-        name = name.replace(reUnescape, '');
-        if (!symbol){
-            token.tag = name.toUpperCase();
-        } else if (symbol === '#') {
-            token.id = name;
-        } else if (symbol === '.') {
-            if (token.classes) {
-                token.classes.push(name);
-            } else {
-                token.classes = [name];
+        var parser = function(all, combinator, spaceCombinator, symbol, name) {
+            combinator = combinator || spaceCombinator;
+            if (!token || combinator != null) {
+                parsed.push(token = {combinator: combinator || ' '});
             }
-        } else if (symbol === ':') {
-            if (token.pseudos) {
-                token.pseudos.push(name);
-            } else {
-                token.pseudos = [name];
-            }
-        }
-        return '';
-    };
 
-    var slice = Array.prototype.slice;
-    var arrayFrom = function(collection) {
-        elements = slice.call(collection, 0);
-    };
-    var arrayMerge = function(collection) {
+            name = name.replace(reUnescape, '');
+            if (!symbol){
+                token.tag = name.toUpperCase();
+            } else if (symbol === '#') {
+                token.id = name;
+            } else if (symbol === '.') {
+                if (token.classes) {
+                    token.classes.push(name);
+                } else {
+                    token.classes = [name];
+                }
+            } else if (symbol === ':') {
+                if (token.pseudos) {
+                    token.pseudos.push(name);
+                } else {
+                    token.pseudos = [name];
+                }
+            }
+            return '';
+        };
+
+        $p['parse'] = parse;
+    }());
+
+
+    // utils
+    var slice = Array.prototype.slice,
+        arrayFrom;
+
+    try {
+        slice.call(root.childNodes, 0);
+        arrayFrom = function(collection) {
+            return slice.call(collection, 0);
+        };
+    } catch(e) {
+        arrayFrom = function(collection) {
+            var array = [];
+            for (var i = 0, node; node = collection[i++];) {
+                array.push(node);
+            }
+            return array;
+        };
+    }
+    var arrayMerge = function(collection, elements) {
         for (var i = 0, node; node = collection[i++];) {
             elements.push(node);
         }
     };
-    try {
-        slice.call(root.childNodes, 0);
-    } catch(e) {
-        arrayFrom = arrayMerge;
-    }
-
-    var arrayFilterAndMerge = function(found) {
-        for (var i = 0, node; node = found[i++];){
-            if (matchSelector(node)) elements.push(node);
+    var arrayFilterAndMerge = function(collection, elements, parsed) {
+        for (var i = 0, node; node = collection[i++];){
+            if (matchSelector(node, parsed)) elements.push(node);
         }
     };
-
-    var contains = function(node) {
+    var contains = function(context, node) {
         do {
             if (node === context) return true;
         } while ((node = node.parentNode));
@@ -229,7 +217,6 @@
     };
 
     $p['pseudos'] = pseudos;
-    $p['parse'] = parse;
     $p['match'] = match;
     $p['context'] = document;
     global['pick'] = $p;
