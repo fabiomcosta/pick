@@ -135,14 +135,13 @@
             var parsed = $p.parse(selector),
                 matches = dontMatchFirstSelector || matchSelector(element, parsed[parsed.length - 1]);
 
-            for (var i = parsed.length - 1; i--;) {
-                if (!combinatorsMatchers[parsed[i+1].combinator](parsed[i])) {
-                    matches = false;
-                    break;
+            if (matches) {
+                for (var i = parsed.length - 1; i--;) {
+                    if (!combinatorsMatchers[parsed[i+1].combinator](parsed[i])) return false;
                 }
-            }
-            if (context && matches) {
-                matches = contains(context, node);
+                if (context) {
+                    if (!contains(context, element)) return false;
+                }
             }
 
             return matches;
