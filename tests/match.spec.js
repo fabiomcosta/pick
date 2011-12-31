@@ -134,8 +134,6 @@ describe('match', function(){
         });
 
         it('should match when the context is sibling of the tested node', function() {
-            debugger;
-            $p.match(this.b, '+ b', this.context);
             expect(this.b).toMatchSelector('+ b', this.context);
         });
     });
