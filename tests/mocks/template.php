@@ -1,55 +1,57 @@
 <div class="wrapper">
-	<a href="#" class="inner">test</a>
+    <a href="#" class="inner">test</a>
 </div>
+
 <div id="divid">
-	<div id="divid2" class="wrapper">
-		<a href="#" class="inner">test</a>
-		<div class="wrapper">
-			<a href="#" class="inner">test</a>
-		</div>
-		<div>
-			<div class="wrapper">
-				<a href="#" class="inner">test</a>
-			</div>
-		</div>
-	</div>
+    <div id="divid2" class="wrapper">
+        <a href="#" class="inner">test</a>
+        <div class="wrapper">
+            <a href="#" class="inner">test</a>
+        </div>
+        <div>
+            <div class="wrapper">
+                <a href="#" class="inner">test</a>
+            </div>
+        </div>
+    </div>
 </div>
 
 <b class="wrapper"></b>
 
 <div>
-	<i class="nest a1">d1<b class="flatInNest a1">d1</b>
-		<b class="nest a2">d2<i class="flatInNest a2">d2</i>
-			<i class="nest a3">d3<b class="flatInNest a3">d3</b>
-				<b class="nest a4">d4<i class="flatInNest a4">d4</i>
-					<i class="nest a5">d5<b class="flatInNest a5">d5</b>
-						<b class="nest a6">d6<i class="flatInNest a6">d6</i>
-						</b>
-					</i>
-				</b>
-			</i>
-		</b>
-	</i>
+    <i class="nest a1">d1<b class="flatInNest a1">d1</b>
+        <b class="nest a2">d2<i class="flatInNest a2">d2</i>
+            <i class="nest a3">d3<b class="flatInNest a3">d3</b>
+                <b class="nest a4">d4<i class="flatInNest a4">d4</i>
+                    <i class="nest a5">d5<b class="flatInNest a5">d5</b>
+                        <b class="nest a6">d6<i class="flatInNest a6">d6</i>
+                        </b>
+                    </i>
+                </b>
+            </i>
+        </b>
+    </i>
 </div>
+
 <div>
-	<b class="flatOut a1">d1
-		<b class="flatInOut a1">d1</b>
-	</b>
-	<i class="flatOut a2">d2
-		<i class="flatInOut a2">d2</i>
-	</i>
-	<b class="flatOut a3">d3
-		<b class="flatInOut a3">d3</b>
-	</b>
-	<i class="flatOut a4">d4
-		<i class="flatInOut a4">d4</i>
-	</i>
-	<b class="flatOut a5">d5
-		<b class="flatInOut a5">d5</b>
-	</b>
-	<i class="flatOut a6">d6
-		<i class="flatInOut a6">d6</i>
-	</i>
+    <b class="flatOut a1">d1
+        <b class="flatInOut a1">d1</b>
+    </b>
+    <i class="flatOut a2">d2
+        <i class="flatInOut a2">d2</i>
+    </i>
+    <b class="flatOut a3">d3
+        <b class="flatInOut a3">d3</b>
+    </b>
+    <i class="flatOut a4">d4
+        <i class="flatInOut a4">d4</i>
+    </i>
+    <b class="flatOut a5">d5
+        <b class="flatInOut a5">d5</b>
+    </b>
+    <i class="flatOut a6">d6
+        <i class="flatInOut a6">d6</i>
+    </i>
 </div>
 
 <div class="contains-cheese">cheese</div>
