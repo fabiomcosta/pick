@@ -7,9 +7,24 @@
             match = $p.match,
             context = _context || $p.context || document;
 
-        if (supports_querySelectorAll) try {
-            return arrayFrom(context.querySelectorAll(selector));
-        } catch (e) {}
+        if (supports_querySelectorAll) {
+            var contextId, hasId, _selector = selector,
+                contextParent = (context && context.parentNode),
+                contextIsNode = (context && context.nodeType === 1);
+
+            if (contextIsNode) {
+                hasId = !!(contextId = context.id);
+                _selector = '#' + (hasId ? contextId : context.id = '_pickid_') + ' ' + selector;
+            }
+            try {
+                return arrayFrom(contextParent.querySelectorAll(_selector));
+            } catch (e) {
+            } finally {
+                if (contextIsNode && !hasId) {
+                    context.removeAttribute('id');
+                }
+            }
+        }
 
         var parsed = $p.parse(selector);
         var found = find(context.ownerDocument || context, context, elements, parsed[parsed.length - 1]);
