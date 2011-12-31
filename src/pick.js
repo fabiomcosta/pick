@@ -146,10 +146,13 @@
                 matches = dontMatchFirstSelector || matchSelector(element, parsed[parsed.length - 1]);
 
             for (var i = parsed.length - 1; i--;) {
-                matches = matches && combinatorsMatchers[parsed[i+1].combinator](parsed[i]);
+                if (!combinatorsMatchers[parsed[i+1].combinator](parsed[i])) {
+                    matches = false;
+                    break;
+                }
             }
-            if (context) {
-                matches = matches && contains(context, node);
+            if (context && matches) {
+                matches = contains(context, node);
             }
 
             return matches;
