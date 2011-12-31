@@ -117,6 +117,26 @@ describe('Finder', function() {
             expect('#divid2 > a ~ span').toFind(0);
         });
     });
+
+
+    describe('Selectors with combinators and context', function() {
+        it('should find elements when using the " " combinator', function() {
+            expect($p('#divid1', $p('#divid1')[0]).length).toEqual(0);
+        });
+
+        it('should find elements when using the ">" combinator', function() {
+            expect($p('> #divid2', $p('#divid1')[0]).length).toEqual(1);
+            expect($p('> #divid1', $p('#divid1')[0]).length).toEqual(0);
+        });
+
+        it('should find elements when using the "+" combinator', function() {
+            expect($p('+ div', $p('#divid2 > .wrapper')[0]).length).toEqual(1);
+        });
+
+        it('should find elements when using the "~" combinator', function() {
+            expect($p('~ div', $p('#divid2 > a')[0]).length).toEqual(2);
+        });
+    });
 });
 
 };

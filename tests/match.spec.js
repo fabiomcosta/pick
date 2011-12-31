@@ -98,7 +98,9 @@ describe('match', function(){
 
     describe('with context', function() {
         beforeEach(function() {
-            this.context = create('<div id="out"><div id="context"></div></div>', 1);
+            this.out = create('<div id="out"><div id="context"></div><b></b></div>');
+            this.context = this.out.getElementsByTagName('div')[0];
+            this.b = this.out.getElementsByTagName('b')[0];
         });
 
         it('should match a simple selector', function() {
@@ -125,6 +127,16 @@ describe('match', function(){
             var el = create('<i><b></b></i>');
             this.context.appendChild(el);
             expect(el).not.toMatchSelector('#out i b', this.context);
+        });
+
+        it('should not match when the context is the same node as the one being tested', function() {
+            expect(this.context).not.toMatchSelector('#context', this.context);
+        });
+
+        it('should match when the context is sibling of the tested node', function() {
+            debugger;
+            $p.match(this.b, '+ b', this.context);
+            expect(this.b).toMatchSelector('+ b', this.context);
         });
     });
 

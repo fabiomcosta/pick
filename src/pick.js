@@ -235,10 +235,12 @@
             if (matchSelector(node, parsed)) elements.push(node);
         }
     };
-    var contains = function(context, node) {
-        do {
+    var contains = ('contains' in root) ? function(context, node) {
+        return context !== node && context.contains(node);
+    } : function(context, node) {
+        while ((node = node.parentNode)) {
             if (node === context) return true;
-        } while ((node = node.parentNode));
+        }
         return false;
     };
 
