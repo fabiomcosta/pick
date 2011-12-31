@@ -1,3 +1,5 @@
+/*! pick | Fabio Miranda Costa 2011 | The MIT License (http://www.opensource.org/licenses/mit-license.php) */
+
 (function(){
 
     var pseudos = {

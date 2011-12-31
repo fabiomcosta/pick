@@ -94,9 +94,29 @@ describe('Finder', function() {
     });
 
     describe('Selectors with combinators', function() {
+        it('should find elements when using the " " combinator', function() {
+            expect('div i.nest.a1').toFind(1);
+            expect('div i.nest.a1 b').toFind(6);
+            expect('#divid span').toFind(0);
+        });
 
+        it('should find elements when using the ">" combinator', function() {
+            expect('div > i.nest.a1').toFind(1);
+            expect('div > i.nest.a2').toFind(0);
+            expect('#divid2 > div').toFind(2);
+        });
+
+        it('should find elements when using the "+" combinator', function() {
+            expect('#divid2 > a + div.wrapper').toFind(1);
+            expect('#divid2 > a + span').toFind(0);
+        });
+
+        it('should find elements when using the "~" combinator', function() {
+            expect('#divid2 > a ~ div.wrapper').toFind(1);
+            expect('#divid2 > a ~ div').toFind(2);
+            expect('#divid2 > a ~ span').toFind(0);
+        });
     });
-
 });
 
 };

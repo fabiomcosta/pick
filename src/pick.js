@@ -1,3 +1,5 @@
+/*! pick | Fabio Miranda Costa 2011 | The MIT License (http://www.opensource.org/licenses/mit-license.php) */
+
 (function(global, document) {
 
     var pseudos = {},
@@ -13,13 +15,25 @@
 
     var $p = function(selector, _context, append) {
         var elements = append || [],
+            match = $p.match,
             context = _context || $p.context || document;
 
         if (supports_querySelectorAll) try {
             return arrayFrom(context.querySelectorAll(selector));
         } catch (e) {}
 
-        return find(context.ownerDocument || context, context, elements, $p.parse(selector)[0]);
+        var parsed = $p.parse(selector);
+        var found = find(context.ownerDocument || context, context, elements, parsed[parsed.length - 1]);
+
+        if (parsed.length > 1) {
+            for (var i = found.length; i--;) {
+                if (!match(found[i], selector, context, true)) {
+                    found.splice(i, 1);
+                }
+            }
+        }
+
+        return found;
     };
 
     var matchSelector = function(node, parsed) {
@@ -74,67 +88,75 @@
         return elements;
     };
 
-    var node;
-    var combinatorsMatchers = {
-        ' ': function(parsed) {
-            while ((node = node.parentNode)) {
-                if (matchSelector(node, parsed)) {
-                    return true;
+    // matcher
+    (function() {
+        var node;
+        var combinatorsMatchers = {
+            ' ': function(parsed) {
+                while ((node = node.parentNode)) {
+                    if (node.nodeType === 1 && matchSelector(node, parsed)) {
+                        return true;
+                    }
                 }
-            }
-            return false;
-        },
-        '>': function(parsed) {
-            return matchSelector((node = node.parentNode), parsed);
-        },
-        '~': function(parsed) {
-            while ((node = node.previousSibling)) {
-                if (matchSelector(node, parsed)) {
-                    return true;
+                return false;
+            },
+            '>': function(parsed) {
+                return (node.nodeType === 1) ? matchSelector((node = node.parentNode), parsed) : false;
+            },
+            '~': function(parsed) {
+                while ((node = node.previousSibling)) {
+                    if (node.nodeType === 1 && matchSelector(node, parsed)) {
+                        return true;
+                    }
                 }
-            }
-            return false;
-        },
-        '+': function(parsed) {
-            while ((node = node.previousSibling)) {
-                if (node.nodeType === 1) {
-                    return matchSelector(node, parsed);
+                return false;
+            },
+            '+': function(parsed) {
+                while ((node = node.previousSibling)) {
+                    if (node.nodeType === 1) {
+                        return matchSelector(node, parsed);
+                    }
                 }
+                return false;
             }
-            return false;
-        }
-    };
+        };
 
-    var match = function(element, selector, context) {
-        if (nativeMatchesSelector) {
-            var contextId, hasId;
+        // dontMatchFirstSelector is an optimization
+        // the matcher wont need to match for the rightmostselector (as in "a" for the selector "div a")
+        var match = function(element, selector, context, dontMatchFirstSelector) {
+            if (nativeMatchesSelector) {
+                var contextId, hasId, contextIsNode = (context && context.nodeType === 1);
+                if (contextIsNode) {
+                    hasId = !!(contextId = context.id);
+                    selector = '#' + (hasId ? contextId : context.id = '__pickid__') + ' ' + selector;
+                }
+                try {
+                    return nativeMatchesSelector.call(element, selector);
+                } catch (e) {
+                } finally {
+                    if (contextIsNode && !hasId) {
+                        context.removeAttribute('id');
+                    }
+                }
+            }
+
+            node = element;
+
+            var parsed = $p.parse(selector),
+                matches = dontMatchFirstSelector || matchSelector(element, parsed[parsed.length - 1]);
+
+            for (var i = parsed.length - 1; i--;) {
+                matches = matches && combinatorsMatchers[parsed[i+1].combinator](parsed[i]);
+            }
             if (context) {
-                hasId = !!(contextId = context.id);
-                selector = '#' + (hasId ? contextId : context.id = '__pickid__') + ' ' + selector;
+                matches = matches && contains(context, node);
             }
-            try {
-                return nativeMatchesSelector.call(element, selector);
-            } finally {
-                if (context && !hasId) {
-                    context.removeAttribute('id');
-                }
-            }
-        }
 
-        node = element;
+            return matches;
+        };
 
-        var parsed = $p.parse(selector),
-            matches = matchSelector(element, parsed[parsed.length - 1]);
-
-        for (var i = parsed.length - 1; i--;) {
-            matches = matches && combinatorsMatchers[parsed[i+1].combinator](parsed[i]);
-        }
-        if (context) {
-            matches = matches && contains(context, node);
-        }
-
-        return matches;
-    };
+        $p['match'] = match;
+    }());
 
     // parser
     (function() {
@@ -153,7 +175,7 @@
 
         var parser = function(all, combinator, spaceCombinator, symbol, name) {
             combinator = combinator || spaceCombinator;
-            if (!token || combinator != null) {
+            if (!token || combinator) {
                 parsed.push(token = {combinator: combinator || ' '});
             }
 
@@ -218,7 +240,6 @@
     };
 
     $p['pseudos'] = pseudos;
-    $p['match'] = match;
     $p['context'] = document;
     global['pick'] = $p;
     if (!global['$p']) global['$p'] = $p;

@@ -13,7 +13,6 @@ It's based on [Slick](https://github.com/mootools/slick), the selector used on t
 * custom pseudo-classes
 
 ### Unsupported selectors
-* combinators (ex: "div span", "div > span")
 * multiple expressions (expressions with comma, ex: "div, span")
 * attribute (ex: "a[title='title']")
 
