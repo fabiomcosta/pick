@@ -2,17 +2,6 @@
 
 (function(global, document) {
 
-    var pseudos = {},
-        root = document.documentElement;
-
-    var supports_querySelectorAll = !!document.querySelectorAll,
-        nativeMatchesSelector = root.matchesSelector || root.msMatchesSelector || root.mozMatchesSelector || root.webkitMatchesSelector;
-
-    if (nativeMatchesSelector) try {
-        nativeMatchesSelector.call(root, ':_pick');
-        nativeMatchesSelector = null;
-    } catch(e) {}
-
     var $p = function(selector, _context, append) {
         var elements = append || [],
             match = $p.match,
@@ -209,7 +198,17 @@
 
     // utils
     var slice = Array.prototype.slice,
-        arrayFrom;
+        arrayFrom,
+        pseudos = {},
+        root = document.documentElement;
+
+    var supports_querySelectorAll = !!document.querySelectorAll,
+        nativeMatchesSelector = root.matchesSelector || root.msMatchesSelector || root.mozMatchesSelector || root.webkitMatchesSelector;
+
+    if (nativeMatchesSelector) try {
+        nativeMatchesSelector.call(root, ':_pick');
+        nativeMatchesSelector = null;
+    } catch(e) {}
 
     try {
         slice.call(root.childNodes, 0);
