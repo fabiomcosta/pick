@@ -114,13 +114,14 @@
         // the matcher wont need to match for the rightmostselector (as in "a" for the selector "div a")
         var match = function(element, selector, context, dontMatchFirstSelector) {
             if (nativeMatchesSelector) {
-                var contextId, hasId, contextIsNode = (context && context.nodeType === 1);
+                var contextId, hasId, _selector = selector,
+                    contextIsNode = (context && context.nodeType === 1);
                 if (contextIsNode) {
                     hasId = !!(contextId = context.id);
-                    selector = '#' + (hasId ? contextId : context.id = '__pickid__') + ' ' + selector;
+                    _selector = '#' + (hasId ? contextId : context.id = '_pickid_') + ' ' + selector;
                 }
                 try {
-                    return nativeMatchesSelector.call(element, selector);
+                    return nativeMatchesSelector.call(element, _selector);
                 } catch (e) {
                 } finally {
                     if (contextIsNode && !hasId) {
