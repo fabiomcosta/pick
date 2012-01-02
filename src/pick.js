@@ -151,19 +151,17 @@
 
             node = element;
 
-            var parsed = $p.parse(selector),
-                matches = matchParsedSelector(element, parsed[parsed.length - 1]);
+            var parsed = $p.parse(selector);
 
-            if (matches) {
-                for (var i = parsed.length - 1; i--;) {
-                    if (!combinatorsMatchers[parsed[i+1].combinator](parsed[i])) return false;
-                }
-                if (context && context.nodeType !== 9) {
-                    if (!combinatorsMatchers[parsed[0].combinator](context)) return false;
-                }
+            if (!matchParsedSelector(element, parsed[parsed.length - 1])) return false;
+
+            for (var i = parsed.length - 1; i--;) {
+                if (!combinatorsMatchers[parsed[i+1].combinator](parsed[i])) return false;
             }
 
-            return matches;
+            if (context && context.nodeType !== 9 && !combinatorsMatchers[parsed[0].combinator](context)) return false;
+
+            return true;
         };
 
         $p['match'] = match;
