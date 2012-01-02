@@ -6,37 +6,32 @@
         var elements = append || [],
             match = $p.match,
             context = _context || $p.context,
-            doc = context.ownerDocument || context;
+            contextIsNotParent = (/^\s*[+~]/).test(selector),
+            doc = context ? context.ownerDocument || context : document,
+            contextIsNode = (context && context.nodeType === 1),
+            findContext = contextIsNode ? (contextIsNotParent ? context.parentNode : context) : doc;
 
-        //if (supports_querySelectorAll) {
-            //var contextId, hasId, _selector = selector,
-                //contextParent = (context && context.parentNode),
-                //contextIsNode = (context && context.nodeType === 1);
+        if (supports_querySelectorAll) {
+            var contextId, hasId, _selector = selector;
 
-            //if (contextIsNode) {
-                //hasId = !!(contextId = context.id);
-                //_selector = '#' + (hasId ? contextId : context.id = '_pickid_') + ' ' + selector;
-            //}
-            //try {
-                //return arrayFrom(contextParent.querySelectorAll(_selector));
-            //} catch (e) {
-            //} finally {
-                //if (contextIsNode && !hasId) {
-                    //context.removeAttribute('id');
-                //}
-            //}
-        //}
+            if (contextIsNode) {
+                hasId = !!(contextId = context.id);
+                _selector = '#' + (hasId ? contextId : context.id = '_pickid_') + ' ' + selector;
+            }
+            try {
+                return arrayFrom(findContext.querySelectorAll(_selector));
+            } catch (e) {
+            } finally {
+                if (contextIsNode && !hasId) {
+                    context.removeAttribute('id');
+                }
+            }
+        }
 
         var parsed = $p.parse(selector),
             firstParsed = parsed[0],
-            findContext = context,
-            el;
-
-        if (context && context.nodeType === 1 && firstParsed.combinator === '+' || firstParsed.combinator === '~') {
-            findContext = context.parentNode || context;
-        }
-
-        var found = find(doc, findContext || doc, parsed[parsed.length - 1]);
+            el, i,
+            found = find(doc, findContext || doc, parsed[parsed.length - 1]);
 
         for (i = 0; el = found[i++];) {
             if (match(el, selector, context)) {
@@ -132,22 +127,22 @@
         };
 
         var match = function(element, selector, context) {
-            //if (nativeMatchesSelector) {
-                //var contextId, hasId, _selector = selector,
-                    //contextIsNode = (context && context.nodeType === 1);
-                //if (contextIsNode) {
-                    //hasId = !!(contextId = context.id);
-                    //_selector = '#' + (hasId ? contextId : context.id = '_pickid_') + ' ' + selector;
-                //}
-                //try {
-                    //return nativeMatchesSelector.call(element, _selector);
-                //} catch (e) {
-                //} finally {
-                    //if (contextIsNode && !hasId) {
-                        //context.removeAttribute('id');
-                    //}
-                //}
-            //}
+            if (nativeMatchesSelector) {
+                var contextId, hasId, _selector = selector,
+                    contextIsNode = (context && context.nodeType === 1);
+                if (contextIsNode) {
+                    hasId = !!(contextId = context.id);
+                    _selector = '#' + (hasId ? contextId : context.id = '_pickid_') + ' ' + selector;
+                }
+                try {
+                    return nativeMatchesSelector.call(element, _selector);
+                } catch (e) {
+                } finally {
+                    if (contextIsNode && !hasId) {
+                        context.removeAttribute('id');
+                    }
+                }
+            }
 
             node = element;
 
