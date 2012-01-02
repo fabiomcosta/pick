@@ -1,6 +1,6 @@
 /*! pick | Fabio Miranda Costa 2011 | The MIT License (http://www.opensource.org/licenses/mit-license.php) */
 
-(function(global, document) {
+(function(global, document, undefined) {
 
     var $p = function(selector, _context, append) {
         var elements = append || [],
@@ -28,8 +28,15 @@
         //}
 
         var parsed = $p.parse(selector),
-            found = find(doc, context || doc, parsed[parsed.length - 1]),
+            firstParsed = parsed[0],
+            findContext = context,
             el;
+
+        if (context && context.nodeType === 1 && firstParsed.combinator === '+' || firstParsed.combinator === '~') {
+            findContext = context.parentNode || context;
+        }
+
+        var found = find(doc, findContext || doc, parsed[parsed.length - 1]);
 
         for (i = 0; el = found[i++];) {
             if (match(el, selector, context)) {
@@ -88,13 +95,7 @@
             }
         }
 
-        if (parsed.combinator === '+' || parsed.combinator === '~') {
-            findContext = context.parentNode || context;
-        } else {
-            findContext = context;
-        }
-
-        return findContext.getElementsByTagName(parsed.tag || '*');
+        return context.getElementsByTagName(parsed.tag || '*');
     };
 
     // matcher
@@ -157,7 +158,6 @@
                 for (var i = parsed.length - 1; i--;) {
                     if (!combinatorsMatchers[parsed[i+1].combinator](parsed[i])) return false;
                 }
-                // TODO tenho que ver como fazer para tratar o "+" em '+ b' assim como os outros combinators
                 if (context && context.nodeType !== 9) {
                     if (!combinatorsMatchers[parsed[0].combinator](context)) return false;
                 }
@@ -243,16 +243,6 @@
             return array;
         };
     }
-    var arrayMerge = function(collection, elements) {
-        for (var i = 0, node; node = collection[i++];) {
-            elements.push(node);
-        }
-    };
-    var arrayFilterAndMerge = function(collection, elements, parsed) {
-        for (var i = 0, node; node = collection[i++];){
-            if (matchParsedSelector(node, parsed)) elements.push(node);
-        }
-    };
     var contains = ('contains' in root) ? function(context, node) {
         return context !== node && context.contains(node);
     } : function(context, node) {
@@ -263,7 +253,7 @@
     };
 
     $p['pseudos'] = pseudos;
-    $p['context'] = document;
+    $p['context'] = undefined;
     global['pick'] = $p;
     if (!global['$p']) global['$p'] = $p;
 
