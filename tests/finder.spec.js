@@ -136,6 +136,10 @@ describe('Finder', function() {
         it('should find elements when using the "~" combinator', function() {
             expect($p('~ div', $p('#divid2 > a')[0]).length).toEqual(2);
         });
+
+        it('should find elements when using the "+" combinator with a compound selector', function() {
+            expect($p('+ div div', $p('#divid2 > .wrapper')[0]).length).toEqual(1);
+        });
     });
 });
 
