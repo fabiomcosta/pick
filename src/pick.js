@@ -173,14 +173,18 @@
     (function() {
         var token,
             parsed,
+            cache = {},
             reTrim = /^\s+|\s+$/g,
             splitter = /(?:\s*([>+~])\s*|(\s))?([#.:])?([^#.:+>~\s]*)/,
             reUnescape = /\\/g;
 
         var parse = function(selector) {
             selector = selector.replace(reTrim, '');
+            var cacheKey = selector;
+            if (cache[cacheKey]) return cache[cacheKey];
             parsed = [], token = null;
             while ((selector = selector.replace(splitter, parser))) {};
+            cache[cacheKey] = parsed;
             return parsed;
         };
 
