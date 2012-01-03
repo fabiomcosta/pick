@@ -20,6 +20,13 @@ describe('Finder', function() {
         });
     });
 
+    it('should select nothing if passing an empty selector', function() {
+        expect('').toFind(0);
+        expect(false).toFind(0);
+        expect(null).toFind(0);
+        expect(undefined).toFind(0);
+    });
+
     it('should select elements by id', function() {
         expect('#title').toFind(1);
         expect('#other').toFind(0);

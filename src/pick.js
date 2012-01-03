@@ -3,6 +3,8 @@
 (function(global, document, undefined) {
 
     var $p = function(selector, context, elements) {
+
+        if (!selector) return [];
         context = context || $p.context;
 
         var doc = context ? context.ownerDocument || context : document,
