@@ -1,8 +1,8 @@
 <!DOCTYPE HTML>
 
-<html lang="en">
+<html>
 <head>
-	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+	<meta charset="utf-8" />
 
 	<title>template xhtml as html</title>
 </head>
