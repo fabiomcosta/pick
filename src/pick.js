@@ -2,42 +2,71 @@
 
 (function(global, document, undefined) {
 
-    var $p = function(selector, _context, append) {
-        var elements = append || [],
-            match = $p.match,
-            context = _context || $p.context,
-            contextIsNotParent = (/^\s*[+~]/).test(selector),
-            doc = context ? context.ownerDocument || context : document,
+    var $p = function(selector, context, elements) {
+        context = context || $p.context;
+
+        var doc = context ? context.ownerDocument || context : document,
+            contextIsNotParent = reSiblingSelector.test(selector),
             contextIsNode = (context && context.nodeType === 1),
             findContext = contextIsNode ? (contextIsNotParent ? context.parentNode : context) : doc;
 
         if (supports_querySelectorAll) {
-            var contextId, hasId, _selector = selector;
+            var _selector = selector,
+                contextId;
 
             if (contextIsNode) {
-                hasId = !!(contextId = context.id);
-                _selector = '#' + (hasId ? contextId : context.id = '_pickid_') + ' ' + selector;
+                if (!(contextId = context.id)) {
+                    context.id = '_pickid_';
+                }
+                _selector = '#' + (contextId || '_pickid_') + ' ' + selector;
             }
             try {
                 return arrayFrom(findContext.querySelectorAll(_selector));
             } catch (e) {
             } finally {
-                if (contextIsNode && !hasId) {
+                if (contextIsNode && !contextId) {
                     context.removeAttribute('id');
                 }
             }
         }
 
-        var parsed = $p.parse(selector),
-            firstParsed = parsed[0],
-            el, i,
-            found = find(doc, findContext || doc, parsed[parsed.length - 1]);
+        elements = elements || [];
 
-        for (i = 0; el = found[i++];) {
-            if (match(el, selector, context)) {
-                elements.push(el);
+        var parsed = $p.parse(selector),
+            rightMostParsed = parsed[parsed.length - 1],
+            match = $p.match,
+            el, i = 0,
+            found = find(doc, findContext, rightMostParsed),
+            matchRightMost =
+                !(rightMostParsed.tag && !rightMostParsed.id && !rightMostParsed.classes && !rightMostParsed.pseudos);
+                //(rightMostParsed.id && !rightMostParsed.tag && !rightMostParsed.classes && !rightMostParsed.pseudos);
+
+        match: while ((el = found[i++])) {
+
+            node = el;
+
+            if (matchRightMost && !matchParsedSelector(el, parsed[parsed.length - 1])) {
+                continue;
             }
+
+            for (var j = parsed.length - 1; j--;) {
+                if (!combinatorsMatchers[parsed[j+1].combinator](parsed[j])) {
+                    continue match;
+                }
+            }
+
+            if (context && context.nodeType !== 9 && !combinatorsMatchers[parsed[0].combinator](context)) {
+                continue;
+            }
+
+            elements.push(el);
         }
+
+        //while ((el = found[i++])) {
+            //if (match(el, parsed, context, matchRightMost)) {
+                //elements.push(el);
+            //}
+        //}
 
         return elements;
     };
@@ -45,16 +74,16 @@
     var matchParsedSelector = function(node, parsed) {
         var i, _parsed;
 
-        if ('nodeType' in parsed) {
+        if (parsed.nodeType) {
             return node === parsed;
         }
 
         if ((_parsed = parsed.tag)) {
-            var nodeName = node.nodeName.toLowerCase();
+            var nodeName = node.nodeName;
             if (_parsed === '*') {
                 if (nodeName < '@') return false; // Fix for comment nodes and closed nodes
             } else {
-                if (nodeName !== _parsed) return false;
+                if (nodeName.toLowerCase() !== _parsed) return false;
             }
         }
 
@@ -93,7 +122,7 @@
         return context.getElementsByTagName(parsed.tag || '*');
     };
 
-    // matcher
+    //matcher
     (function() {
         var node;
         var combinatorsMatchers = {
@@ -126,7 +155,7 @@
             }
         };
 
-        var match = function(element, selector, context) {
+        var match = function(element, selector, context, matchRightMost) {
             if (nativeMatchesSelector) {
                 var contextId, hasId, _selector = selector,
                     contextIsNode = (context && context.nodeType === 1);
@@ -146,9 +175,9 @@
 
             node = element;
 
-            var parsed = $p.parse(selector);
+            var parsed = (typeof selector === 'string') ? $p.parse(selector) : selector;
 
-            if (!matchParsedSelector(element, parsed[parsed.length - 1])) return false;
+            if (matchRightMost && !matchParsedSelector(element, parsed[parsed.length - 1])) return false;
 
             for (var i = parsed.length - 1; i--;) {
                 if (!combinatorsMatchers[parsed[i+1].combinator](parsed[i])) return false;
@@ -177,8 +206,7 @@
             if (cache[cacheKey]) return cache[cacheKey];
             parsed = [], token = null;
             while ((selector = selector.replace(splitter, parser))) {};
-            cache[cacheKey] = parsed;
-            return parsed;
+            return cache[cacheKey] = parsed;
         };
 
         var parser = function(all, combinator, spaceCombinator, symbol, name) {
@@ -216,6 +244,7 @@
     var slice = Array.prototype.slice,
         arrayFrom,
         pseudos = {},
+        reSiblingSelector = /^\s*[+~]/,
         root = document.documentElement;
 
     var supports_querySelectorAll = !!document.querySelectorAll,
