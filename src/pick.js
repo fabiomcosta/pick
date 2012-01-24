@@ -12,37 +12,37 @@
             contextIsNode = (context && context.nodeType === 1),
             findContext = contextIsNode ? (contextIsNotParent ? context.parentNode : context) : doc;
 
-        if (supports_querySelectorAll) {
-            var _selector = selector,
-                contextId;
+        //if (supports_querySelectorAll) {
+            //var _selector = selector,
+                //contextId;
 
-            if (contextIsNode) {
-                if (!(contextId = context.id)) {
-                    context.id = '_pickid_';
-                }
-                _selector = '#' + (contextId || '_pickid_') + ' ' + selector;
-            }
-            try {
-                return arrayFrom(findContext.querySelectorAll(_selector));
-            } catch (e) {
-            } finally {
-                if (contextIsNode && !contextId) {
-                    context.removeAttribute('id');
-                }
-            }
-        }
+            //if (contextIsNode) {
+                //if (!(contextId = context.id)) {
+                    //context.id = '_pickid_';
+                //}
+                //_selector = '#' + (contextId || '_pickid_') + ' ' + selector;
+            //}
+            //try {
+                //return arrayFrom(findContext.querySelectorAll(_selector));
+            //} catch (e) {
+            //} finally {
+                //if (contextIsNode && !contextId) {
+                    //context.removeAttribute('id');
+                //}
+            //}
+        //}
 
         elements = elements || [];
 
         var parsed = $p.parse(selector),
             rightMostParsed = parsed[parsed.length - 1],
             found = find(doc, findContext, rightMostParsed),
-            matchRightMost = !(rightMostParsed.tag ^ rightMostParsed.id && !rightMostParsed.classes && !rightMostParsed.pseudos),
+            dontMatchRightMost = (rightMostParsed.tag ^ rightMostParsed.id && !rightMostParsed.classes && !rightMostParsed.pseudos),
             match = $p.match,
             el, i = 0;
 
         while ((el = found[i++])) {
-            if (match(el, parsed, context, matchRightMost)) {
+            if (match(el, parsed, context, dontMatchRightMost, !contextIsNotParent)) {
                 elements.push(el);
             }
         }
@@ -99,7 +99,7 @@
             }
         };
 
-        var match = function(element, selector, context, matchRightMost) {
+        var match = function(element, selector, context, dontMatchRightMost, dontMatchContext) {
             if (nativeMatchesSelector) {
                 var contextId, hasId, _selector = selector,
                     contextIsNode = (context && context.nodeType === 1);
@@ -121,13 +121,13 @@
 
             var parsed = (typeof selector === 'string') ? $p.parse(selector) : selector;
 
-            if (matchRightMost && !matchParsedSelector(element, parsed[parsed.length - 1])) return false;
+            if (!dontMatchRightMost && !matchParsedSelector(element, parsed[parsed.length - 1])) return false;
 
             for (var i = parsed.length - 1; i--;) {
                 if (!combinatorsMatchers[parsed[i+1].combinator](parsed[i])) return false;
             }
 
-            if (context && context.nodeType !== 9 && !combinatorsMatchers[parsed[0].combinator](context)) return false;
+            if (context && !dontMatchContext && context.nodeType !== 9 && !combinatorsMatchers[parsed[0].combinator](context)) return false;
 
             return true;
         };
