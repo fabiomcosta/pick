@@ -39,76 +39,15 @@
             match = $p.match,
             el, i = 0,
             found = find(doc, findContext, rightMostParsed),
-            matchRightMost =
-                !(rightMostParsed.tag && !rightMostParsed.id && !rightMostParsed.classes && !rightMostParsed.pseudos);
-                //(rightMostParsed.id && !rightMostParsed.tag && !rightMostParsed.classes && !rightMostParsed.pseudos);
+            matchRightMost = !(rightMostParsed.tag ^ rightMostParsed.id && !rightMostParsed.classes && !rightMostParsed.pseudos);
 
-        match: while ((el = found[i++])) {
-
-            node = el;
-
-            if (matchRightMost && !matchParsedSelector(el, parsed[parsed.length - 1])) {
-                continue;
+        while ((el = found[i++])) {
+            if (match(el, parsed, context, matchRightMost)) {
+                elements.push(el);
             }
-
-            for (var j = parsed.length - 1; j--;) {
-                if (!combinatorsMatchers[parsed[j+1].combinator](parsed[j])) {
-                    continue match;
-                }
-            }
-
-            if (context && context.nodeType !== 9 && !combinatorsMatchers[parsed[0].combinator](context)) {
-                continue;
-            }
-
-            elements.push(el);
         }
-
-        //while ((el = found[i++])) {
-            //if (match(el, parsed, context, matchRightMost)) {
-                //elements.push(el);
-            //}
-        //}
 
         return elements;
-    };
-
-    var matchParsedSelector = function(node, parsed) {
-        var i, _parsed;
-
-        if (parsed.nodeType) {
-            return node === parsed;
-        }
-
-        if ((_parsed = parsed.tag)) {
-            var nodeName = node.nodeName;
-            if (_parsed === '*') {
-                if (nodeName < '@') return false; // Fix for comment nodes and closed nodes
-            } else {
-                if (nodeName.toLowerCase() !== _parsed) return false;
-            }
-        }
-
-        if (parsed.id && node.getAttribute('id') !== parsed.id) {
-            return false;
-        }
-
-        if ((_parsed = parsed.classes)) {
-            var className = (' ' + node.className + ' ');
-            for (i = _parsed.length; i--;) {
-                if (className.indexOf(' ' + _parsed[i] + ' ') < 0) return false;
-            }
-        }
-
-        if ((_parsed = parsed.pseudos)) {
-            for (i = _parsed.length; i--;) {
-                var pseudoClass = pseudos[_parsed[i]];
-                if (!pseudoClass) throw Error('pick: pseudo-class ":'+_parsed[i]+'" is not defined.');
-                if (!pseudoClass.call($p, node)) return false;
-            }
-        }
-
-        return true;
     };
 
     var find = function(doc, context, parsed) {
@@ -137,7 +76,7 @@
                 return false;
             },
             '>': function(parsed) {
-                return (node.nodeType === 1) && matchParsedSelector((node = node.parentNode), parsed);
+                return ((node = node.parentNode).nodeType === 1) && matchParsedSelector(node, parsed);
             },
             '~': function(parsed) {
                 while ((node = node.previousSibling)) {
@@ -190,6 +129,44 @@
             return true;
         };
 
+        var matchParsedSelector = function(node, parsed) {
+            var i, _parsed;
+
+            if (parsed.nodeType) {
+                return node === parsed;
+            }
+
+            if ((_parsed = parsed.tag)) {
+                var nodeName = node.nodeName;
+                if (_parsed === '*') {
+                    if (nodeName < '@') return false; // Fix for comment nodes and closed nodes
+                } else {
+                    if (nodeName.toLowerCase() !== _parsed) return false;
+                }
+            }
+
+            if ((_parsed = parsed.id) && node.getAttribute('id') !== _parsed) {
+                return false;
+            }
+
+            if ((_parsed = parsed.classes)) {
+                var className = (' ' + node.className + ' ');
+                for (i = _parsed.length; i--;) {
+                    if (className.indexOf(' ' + _parsed[i] + ' ') < 0) return false;
+                }
+            }
+
+            if ((_parsed = parsed.pseudos)) {
+                for (i = _parsed.length; i--;) {
+                    var pseudoClass = pseudos[_parsed[i]];
+                    if (!pseudoClass) throw Error('pick: pseudo-class ":'+ _parsed[i] +'" is not defined.');
+                    if (!pseudoClass.call($p, node)) return false;
+                }
+            }
+
+            return true;
+        };
+
         $p['match'] = match;
     }());
 
@@ -218,7 +195,7 @@
             }
 
             name = name.replace(reUnescape, '');
-            if (!symbol){
+            if (!symbol) {
                 token.tag = name.toLowerCase();
             } else if (symbol === '#') {
                 token.id = name;
