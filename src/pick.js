@@ -1,6 +1,6 @@
 /*! pick | Fabio Miranda Costa 2011 | The MIT License (http://www.opensource.org/licenses/mit-license.php) */
 
-(function(global, document, undefined) {
+(function(global, document) {
 
     var $p = function(selector, context, elements) {
 
@@ -62,6 +62,7 @@
 
         return context.getElementsByTagName(parsed.tag || '*');
     };
+
 
     //matcher
     (function() {
@@ -170,6 +171,7 @@
         $p['match'] = match;
     }());
 
+
     // parser
     (function() {
         var token,
@@ -250,6 +252,8 @@
     }
     var contains = ('contains' in root) ? function(context, node) {
         return context !== node && context.contains(node);
+    } : ('compareDocumentPosition' in root) ? function(context, node){
+        return context === node || !!(context.compareDocumentPosition(node) & 16);
     } : function(context, node) {
         while ((node = node.parentNode)) {
             if (node === context) return true;
@@ -258,7 +262,6 @@
     };
 
     $p['pseudos'] = pseudos;
-    $p['context'] = undefined;
     global['pick'] = $p;
     if (!global['$p']) global['$p'] = $p;
 
