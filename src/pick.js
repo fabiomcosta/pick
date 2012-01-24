@@ -36,10 +36,10 @@
 
         var parsed = $p.parse(selector),
             rightMostParsed = parsed[parsed.length - 1],
-            match = $p.match,
-            el, i = 0,
             found = find(doc, findContext, rightMostParsed),
-            matchRightMost = !(rightMostParsed.tag ^ rightMostParsed.id && !rightMostParsed.classes && !rightMostParsed.pseudos);
+            matchRightMost = !(rightMostParsed.tag ^ rightMostParsed.id && !rightMostParsed.classes && !rightMostParsed.pseudos),
+            match = $p.match,
+            el, i = 0;
 
         while ((el = found[i++])) {
             if (match(el, parsed, context, matchRightMost)) {
@@ -51,13 +51,15 @@
     };
 
     var find = function(doc, context, parsed) {
-        var parsedId = parsed.id;
-
-        if (parsedId) {
-            var element = doc.getElementById(parsedId);
+        if (parsed.id) {
+            var element = doc.getElementById(parsed.id);
             if (element && (doc === context || contains(context, element))){
                 return [element];
             }
+        }
+
+        if (supports_getElementsByClassName && parsed.classes && !parsed.tag) {
+            return context.getElementsByClassName(parsed.classes.join(' '));
         }
 
         return context.getElementsByTagName(parsed.tag || '*');
@@ -229,6 +231,7 @@
         root = document.documentElement;
 
     var supports_querySelectorAll = !!document.querySelectorAll,
+        supports_getElementsByClassName = !!document.getElementsByClassName,
         nativeMatchesSelector = root.matchesSelector || root.msMatchesSelector || root.mozMatchesSelector || root.webkitMatchesSelector;
 
     if (nativeMatchesSelector) try {
