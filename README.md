@@ -1,9 +1,9 @@
-uSelector
-=========
-A micro, super fast, scope limited, javascript selector engine to be used anywhere
-----------------------------------------------------------------------------------
+pick
+====
+A small, super fast, javascript selector engine to be used anywhere
+-------------------------------------------------------------------
 
-uSelector (micro selector), is a node selector for HTML documents that uses css expressions to select nodes.
+pick, is a node selector for HTML documents that uses css expressions to select nodes.
 It's based on [Slick](https://github.com/mootools/slick), the selector used on the [Mootools](http://mootools.net) javascript framework.
 
 ### Supported selectors
@@ -16,7 +16,7 @@ It's based on [Slick](https://github.com/mootools/slick), the selector used on t
 * multiple expressions (expressions with comma, ex: "div, span")
 * attribute (ex: "a[title='title']")
 
-### Suported with the uSelectorPseudoClasses module
+### Suported with the pickPseudoClasses module
 * :empty
 * :first-child
 * :last-child
@@ -33,16 +33,16 @@ note: To build with these pseudo-selectors included do `make build all=true`
 How to use
 ----------
 
-`$u('your-selector')` -> returns an array of nodes that match the selector
+`$p('your-selector')` -> returns an array of nodes that match the selector
 
 Create your own pseudo-class
 --------------------------------
 
-	$u.pseudo['your-custom-pseudo'] = function(node){
+	$p.pseudo['your-custom-pseudo'] = function(node){
 		return boolean;
 	};
 
-It should return true if the passed node fits the behavior of your pseudo. see the ["src/uSelectorPseudoClasses.js"](https://github.com/fabiomcosta/micro-selector/blob/master/src/uSelectorPseudoClasses.js)
+It should return true if the passed node fits the behavior of your pseudo. see the ["src/pickPseudoClasses.js"](https://github.com/fabiomcosta/pick/blob/master/src/pickPseudoClasses.js)
 
 Examples
 --------
@@ -53,12 +53,12 @@ Examples
 		<div id="id" class="div-class"></div>
 	</div>
 
-* $u('strong.strong-class') -> [<strong.strong-class>]
-* $u('span') -> [\<span\>]
-* $u('#id') -> [<div#id.div-class>]
-* $u('div#id') -> [<div#id.div-class>]
-* $u('div#id.div-class') -> [<div#id.div-class>]
-* $u('em') -> []
+* $p('strong.strong-class') -> [<strong.strong-class>]
+* $p('span') -> [\<span\>]
+* $p('#id') -> [<div#id.div-class>]
+* $p('div#id') -> [<div#id.div-class>]
+* $p('div#id.div-class') -> [<div#id.div-class>]
+* $p('em') -> []
 
 Run Tests
 ---------
