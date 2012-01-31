@@ -12,25 +12,25 @@
             contextIsNode = (context && context.nodeType === 1),
             findContext = contextIsNode ? (contextIsNotParent ? context.parentNode : context) : doc;
 
-        //if (supports_querySelectorAll) {
-            //var _selector = selector,
-                //contextId;
+        if (supports_querySelectorAll) {
+            var _selector = selector,
+                contextId;
 
-            //if (contextIsNode) {
-                //if (!(contextId = context.id)) {
-                    //context.id = '_pickid_';
-                //}
-                //_selector = '#' + (contextId || '_pickid_') + ' ' + selector;
-            //}
-            //try {
-                //return arrayFrom(findContext.querySelectorAll(_selector));
-            //} catch (e) {
-            //} finally {
-                //if (contextIsNode && !contextId) {
-                    //context.removeAttribute('id');
-                //}
-            //}
-        //}
+            if (contextIsNode) {
+                if (!(contextId = context.id)) {
+                    context.id = '_pickid_';
+                }
+                _selector = '#' + (contextId || '_pickid_') + ' ' + selector;
+            }
+            try {
+                return arrayFrom(findContext.querySelectorAll(_selector));
+            } catch (e) {
+            } finally {
+                if (contextIsNode && !contextId) {
+                    context.removeAttribute('id');
+                }
+            }
+        }
 
         elements = elements || [];
 
