@@ -53,12 +53,12 @@ Examples
 		<div id="id" class="div-class"></div>
 	</div>
 
-* $p('strong.strong-class') -> [<strong.strong-class>]
-* $p('span') -> [\<span\>]
-* $p('#id') -> [<div#id.div-class>]
-* $p('div#id') -> [<div#id.div-class>]
-* $p('div#id.div-class') -> [<div#id.div-class>]
-* $p('em') -> []
+* `$p('strong.strong-class') -> [<strong.strong-class>]`
+* `$p('span') -> [<span>]`
+* `$p('#id') -> [<div#id.div-class>]`
+* `$p('div#id') -> [<div#id.div-class>]`
+* `$p('div#id.div-class') -> [<div#id.div-class>]`
+* `$p('em') -> []`
 
 Run Tests
 ---------
